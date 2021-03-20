@@ -31,6 +31,7 @@
 //     Robotics: Science and Systems Conference (RSS). Berkeley, CA, July 2014.
 
 #include "utility.h"
+#include <fstream>
 
 class TransformFusion{
 
@@ -60,6 +61,7 @@ private:
     float transformAftMapped[6];
 
     std_msgs::Header currentHeader;
+    std::ofstream traj_file;
 
 public:
 
@@ -89,6 +91,12 @@ public:
             transformBefMapped[i] = 0;
             transformAftMapped[i] = 0;
         }
+        traj_file.open ("/home/zhenyu/datasets/lego_loam/traj_data.txt");
+    }
+
+    ~TransformFusion(){
+        traj_file.close();
+        std::cout<<"closing traj_file..."<<std::endl;
     }
 
     void transformAssociateToMap()
@@ -193,6 +201,10 @@ public:
         transformSum[3] = laserOdometry->pose.pose.position.x;
         transformSum[4] = laserOdometry->pose.pose.position.y;
         transformSum[5] = laserOdometry->pose.pose.position.z;
+
+
+        std::cout<<"roll= "<<roll<<", pitch = "<<pitch<<", yaw= "<<yaw<<", x= "<<transformSum[3]<<", y= "<<transformSum[4]<<", z = "<<transformSum[5]<<std::endl;
+        traj_file<<roll<<","<<pitch<<","<<yaw<<","<<transformSum[3]<<","<<transformSum[4]<<","<<transformSum[5]<<"\n";
 
         transformAssociateToMap();
 
