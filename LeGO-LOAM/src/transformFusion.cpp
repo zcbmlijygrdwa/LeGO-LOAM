@@ -61,7 +61,6 @@ private:
     float transformAftMapped[6];
 
     std_msgs::Header currentHeader;
-    std::ofstream traj_file;
 
 public:
 
@@ -91,12 +90,9 @@ public:
             transformBefMapped[i] = 0;
             transformAftMapped[i] = 0;
         }
-        traj_file.open ("/home/zhenyu/datasets/lego_loam/traj_data.txt");
     }
 
     ~TransformFusion(){
-        traj_file.close();
-        std::cout<<"closing traj_file..."<<std::endl;
     }
 
     void transformAssociateToMap()
@@ -202,10 +198,6 @@ public:
         transformSum[4] = laserOdometry->pose.pose.position.y;
         transformSum[5] = laserOdometry->pose.pose.position.z;
 
-
-        std::cout<<"roll= "<<roll<<", pitch = "<<pitch<<", yaw= "<<yaw<<", x= "<<transformSum[3]<<", y= "<<transformSum[4]<<", z = "<<transformSum[5]<<std::endl;
-        traj_file<<roll<<","<<pitch<<","<<yaw<<","<<transformSum[3]<<","<<transformSum[4]<<","<<transformSum[5]<<"\n";
-
         transformAssociateToMap();
 
         geoQuat = tf::createQuaternionMsgFromRollPitchYaw
@@ -219,7 +211,7 @@ public:
         laserOdometry2.pose.pose.position.x = transformMapped[3];
         laserOdometry2.pose.pose.position.y = transformMapped[4];
         laserOdometry2.pose.pose.position.z = transformMapped[5];
-        //pubLaserOdometry2.publish(laserOdometry2);
+        pubLaserOdometry2.publish(laserOdometry2);
 
         laserOdometryTrans2.stamp_ = laserOdometry->header.stamp;
         laserOdometryTrans2.setRotation(tf::Quaternion(-geoQuat.y, -geoQuat.z, geoQuat.x, geoQuat.w));

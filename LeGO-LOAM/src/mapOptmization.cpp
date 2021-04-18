@@ -44,6 +44,8 @@
 
 #include <gtsam/nonlinear/ISAM2.h>
 
+#include "/home/zhenyu/cpp_util/cpp_util.hpp"
+
 using namespace gtsam;
 
 class mapOptimization{
@@ -55,6 +57,7 @@ private:
     Values optimizedEstimate;
     ISAM2 *isam;
     Values isamCurrentEstimate;
+
 
     noiseModel::Diagonal::shared_ptr priorNoise;
     noiseModel::Diagonal::shared_ptr odometryNoise;
@@ -231,6 +234,7 @@ public:
 		parameters.relinearizeSkip = 1;
     	isam = new ISAM2(parameters);
 
+
         pubKeyPoses = nh.advertise<sensor_msgs::PointCloud2>("/key_pose_origin", 2);
         pubLaserCloudSurround = nh.advertise<sensor_msgs::PointCloud2>("/laser_cloud_surround", 2);
         pubOdomAftMapped = nh.advertise<nav_msgs::Odometry> ("/aft_mapped_to_init", 5);
@@ -264,7 +268,7 @@ public:
 
         allocateMemory();
     }
-
+    
     void allocateMemory(){
 
         cloudKeyPoses3D.reset(new pcl::PointCloud<PointType>());
@@ -698,6 +702,23 @@ public:
             //cloudMsgTemp.header.frame_id = "/camera_init";
             cloudMsgTemp.header.frame_id = "my_global";
             pubKeyPoses.publish(cloudMsgTemp);
+
+            std::ofstream traj_file;
+            traj_file.open ("/home/zhenyu/datasets/lego_loam/traj_data.txt");
+            for(int i = 0 ; i < cloudKeyPoses3D->points.size() ; i++)
+            {
+                double roll = 0;
+                double pitch = 0;
+                double yaw = 0;
+                double x = cloudKeyPoses3D->points[i].x;
+                double y = cloudKeyPoses3D->points[i].y;
+                double z = cloudKeyPoses3D->points[i].z;
+
+                traj_file<<roll<<","<<pitch<<","<<yaw<<","<<x<<","<<y<<","<<z<<"\n";
+            }
+
+            traj_file.close();
+            std::cout<<"saving traj_file key, size = "<<cloudKeyPoses3D->points.size()<<std::endl;
         }
 
         if (pubRecentKeyFrames.getNumSubscribers() != 0){
